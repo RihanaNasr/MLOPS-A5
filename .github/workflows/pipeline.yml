@@ -65,7 +65,7 @@ jobs:
           path: .
 
       - name: Unzip Artifacts
-        run: unzip deployment_artifacts.zip
+        run: unzip -o deployment_artifacts.zip
 
       - name: Check Accuracy Threshold
         env:
