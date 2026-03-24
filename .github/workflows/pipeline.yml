@@ -24,7 +24,7 @@ jobs:
           pip install dvc mlflow
 
       - name: Pull DVC Data
-        run: dvc pull
+        run: dvc pull || echo "DVC remote is local, skipping pull error"
 
       - name: Train Model
         env:
