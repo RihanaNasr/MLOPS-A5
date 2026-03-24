@@ -30,6 +30,7 @@ jobs:
         env:
           MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: |
+          rm -rf mlruns || true
           python train.py
 
       - name: Upload Run ID
