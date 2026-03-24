@@ -1,29 +1,22 @@
-import os
 import mlflow
+import sys
 
-# --- CONFIG ---
-FORCE_FAIL = True  # Set to True to simulate low accuracy
-THRESHOLD = 0.85
-
-# Read Run ID
-with open("model_info.txt", "r") as f:
+# Get the Run ID
+with open("model_info.txt") as f:
     run_id = f.read().strip()
 
-# Fetch accuracy from MLflow
-mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000"))
-client = mlflow.MlflowClient()
-run = client.get_run(run_id)
-accuracy = float(run.data.metrics.get("accuracy", 0.0))
+# Set your MLflow Tracking URI (could use an env variable or secret in GH Actions)
+mlflow.set_tracking_uri("http://127.0.0.1:5000")  # replace with your MLflow URI or secret
 
-# Force fail for testing if needed
-if FORCE_FAIL:
-    accuracy = 0.5
+# Get the run data
+run = mlflow.get_run(run_id)
+accuracy = run.data.metrics.get("accuracy", 0)
 
-print(f"ℹ️ Accuracy for Run ID {run_id}: {accuracy:.4f}")
+print(f"Run ID: {run_id}, Accuracy: {accuracy}")
 
-# Check threshold
-if accuracy >= THRESHOLD:
-    print(f"✅ Accuracy above threshold ({THRESHOLD}) — ready to deploy!")
-else:
-    print(f"❌ Accuracy below threshold ({THRESHOLD}) — failing pipeline.")
-    exit(1)  # This will fail the GitHub Action
+# Threshold check
+if accuracy < 0.85:
+    print("Accuracy below 0.85 – failing deployment")
+    sys.exit(1)
+
+print("Accuracy threshold met – proceeding to deploy")
