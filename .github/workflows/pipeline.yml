@@ -33,11 +33,13 @@ jobs:
           rm -rf mlruns || true
           python train.py
 
-      - name: Upload Run ID
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: model_info
-          path: model_info.txt
+          name: deployment_artifacts
+          path: |
+            model_info.txt
+            mlruns/
 
   deploy:
     name: Deploy Model
@@ -55,10 +57,10 @@ jobs:
       - name: Install Dependencies
         run: pip install mlflow
 
-      - name: Download Run ID
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: model_info
+          name: deployment_artifacts
           path: .
 
       - name: Check Accuracy Threshold
