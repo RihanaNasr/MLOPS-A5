@@ -8,11 +8,13 @@ import mlflow
 import mlflow.sklearn
 
 # Use local folder (works in GitHub Actions)
-mlflow.set_tracking_uri("file:./mlruns")
+import os
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
 mlflow.set_experiment("Iris_Classification")
 
 # Start MLflow run
 with mlflow.start_run() as run:
+    run_id = run.info.run_id
     
     # Load data
     data = pd.read_csv("iris.csv")
@@ -24,7 +26,7 @@ with mlflow.start_run() as run:
         X, y, test_size=0.2, random_state=42
     )
 
-    model = RandomForestClassifier()
+    model = RandomForestClassifier(n_estimators=1)
     model.fit(X_train, y_train)
 
     predictions = model.predict(X_test)
@@ -44,4 +46,4 @@ with mlflow.start_run() as run:
 
     # SAVE RUN ID to file (IMPORTANT FIX)
     with open("model_info.txt", "w") as f:
-        f.write(run.info.run_id)
+        f.write(run_id)

@@ -1,67 +1,88 @@
-name: ML Pipeline
+name: MLOps Multi-Job Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
+
   validate:
+    name: Validate Model
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      # 1. Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v3
 
+      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"
+          python-version: '3.10'
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: |
-          pip install pandas scikit-learn mlflow joblib dvc
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install dvc mlflow scikit-learn
 
-      - name: Skip DVC pull
-        run: echo "Dataset already available"
+      # 4. Pull data using DVC
+      - name: Pull data
+        run: dvc pull || echo "DVC skipped"
 
+      # 5. Run training
       - name: Train model
-        run: python train.py
-
-      - name: Save Run ID
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: |
-          python -c "import mlflow; f=open('model_info.txt','w'); f.write(mlflow.last_active_run().info.run_id); f.close()"
+          python train.py
+          echo $(cat model_info.txt)
 
+      # 6. Upload model info artifact
       - name: Upload model info
         uses: actions/upload-artifact@v4
         with:
-          name: model-info
+          name: model_info
           path: model_info.txt
 
   deploy:
+    name: Deploy Model
     needs: validate
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      # 1. Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v3
 
+      # 2. Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"
+          python-version: '3.10'
 
+      # 3. Install dependencies
       - name: Install dependencies
-        run: pip install mlflow
+        run: |
+          python -m pip install --upgrade pip
+          pip install mlflow scikit-learn
 
+      # 4. Download model info artifact
       - name: Download model info
         uses: actions/download-artifact@v4
         with:
-          name: model-info
+          name: model_info
           path: .
 
-      - name: Check model threshold
-        run: python check_threshold.py
-
-      - name: Mock Docker build
+      # 5. Check accuracy threshold
+      - name: Validate accuracy threshold
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: |
-          RUN_ID=$(cat model_info.txt)
-          echo "Building Docker image for Run ID: $RUN_ID"
+          python check_threshold.py
+
+      # 6. Mock Docker Build
+      - name: Mock Docker Build
+        run: |
+          echo "Building Docker image for Run ID: $(cat model_info.txt)"
