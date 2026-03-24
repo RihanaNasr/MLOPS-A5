@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: Install Dependencies
         run: |
@@ -27,12 +27,10 @@ jobs:
         run: dvc pull
 
       - name: Train Model
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: |
           python train.py
-
-      - name: Save Run ID
-        run: |
-          python -c "import mlflow; f=open('model_info.txt','w'); f.write(mlflow.last_active_run().info.run_id); f.close()"
 
       - name: Upload Run ID
         uses: actions/upload-artifact@v4
@@ -46,12 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: Install Dependencies
         run: pip install mlflow
@@ -63,6 +61,8 @@ jobs:
           path: .
 
       - name: Check Accuracy Threshold
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: python check_threshold.py
 
       - name: Mock Docker Build

@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/Rihana Nasr/Desktop/MLOPS-A5/mlruns/0/models/m-0ddec9e6846b4288a18fda5aeda3c780/artifacts
+creation_timestamp: 1774324891285
+experiment_id: '0'
+last_updated_timestamp: 1774324894293
+model_id: m-0ddec9e6846b4288a18fda5aeda3c780
+model_type: null
+name: model
+source_run_id: fcda6e956f7c451f8efab99324cab203
+status: 2
+status_message: null
