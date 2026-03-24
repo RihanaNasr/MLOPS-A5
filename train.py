@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 
 # Use Linux-friendly or relative path for MLflow tracking
-tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "./mlruns")
+tracking_uri = os.getenv("MLFLOW_TRACKING_URI") or "./mlruns"
 mlflow.set_tracking_uri(tracking_uri)
 
 # Load dataset

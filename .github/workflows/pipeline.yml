@@ -33,13 +33,14 @@ jobs:
           rm -rf mlruns || true
           python train.py
 
+      - name: Package Artifacts
+        run: zip -r deployment_artifacts.zip model_info.txt mlruns/
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: deployment_artifacts
-          path: |
-            model_info.txt
-            mlruns/
+          path: deployment_artifacts.zip
 
   deploy:
     name: Deploy Model
@@ -62,6 +63,9 @@ jobs:
         with:
           name: deployment_artifacts
           path: .
+
+      - name: Unzip Artifacts
+        run: unzip deployment_artifacts.zip
 
       - name: Check Accuracy Threshold
         env:
